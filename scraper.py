@@ -82,12 +82,20 @@ try:
         # Total MyTab Charge
         total_mytab_charge_element = soup.find('span', attrs={'data-testid': 'mytab-total-value'})
         tradeup_total_mytab_charge = total_mytab_charge_element.text.strip() if total_mytab_charge_element else "Not found"
+        
+        # Calculate Monthly Cost
+        tradeup_monthly_cost = "Not found"
+        if tradeup_total_mytab_charge != "Not found":
+            try:
+                tradeup_monthly_cost = f"${float(tradeup_total_mytab_charge.replace(' ','').replace('$','')) / 24:.2f}/month"
+            except (ValueError, ZeroDivisionError):
+                tradeup_monthly_cost = "Not found"
 
         # Required Plan
         required_plan_element = soup.find('div', attrs={'data-testid': 'return-policy-trade-up'})
         tradeup_required_plan = required_plan_element.text.strip() if required_plan_element else "Not found"
 
-        tradeup_info = f"""**TradeUp Information:**
+        tradeup_info = f"""**TradeUp Information:** {tradeup_monthly_cost}
 Retail Price: {tradeup_retail_price}
 Upfront Cost: {tradeup_upfront_cost}
 Savings: {tradeup_savings}
@@ -132,11 +140,19 @@ Required Plan: {tradeup_required_plan}
         total_mytab_charge_element = soup.find('span', attrs={'data-testid': 'mytab-total-value'})
         mytab_total_mytab_charge = total_mytab_charge_element.text.strip() if total_mytab_charge_element else "Not found"
 
+        # Calculate Monthly Cost
+        mytab_monthly_cost = "Not found"
+        if mytab_total_mytab_charge != "Not found":
+            try:
+                mytab_monthly_cost = f"${float(mytab_total_mytab_charge.replace(' ','').replace('$','')) / 24:.2f}/month"
+            except (ValueError, ZeroDivisionError):
+                mytab_monthly_cost = "Not found"
+
         # Required Plan
         required_plan_element = soup.find('div', attrs={'data-testid': 'return-policy-mytab'})
         mytab_required_plan = required_plan_element.text.strip() if required_plan_element else "Not found"
 
-        mytab_info = f"""**MyTab Information:**
+        mytab_info = f"""**MyTab Information:** {mytab_monthly_cost}
 Retail Price: {mytab_retail_price}
 Upfront Cost: {mytab_upfront_cost}
 MyTab Savings: {mytab_savings}
