@@ -5,6 +5,31 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
+import requests
+import json
+
+# --- Discord Webhook Configuration ---
+DISCORD_WEBHOOK_URL = "YOUR_WEBHOOK_URL_HERE" # <--- REPLACE WITH YOUR WEBHOOK URL
+
+def send_to_discord(message):
+    """Sends a message to a Discord channel using a webhook."""
+    if DISCORD_WEBHOOK_URL == "YOUR_WEBHOOK_URL_HERE":
+        print("Please replace 'YOUR_WEBHOOK_URL_HERE' with your actual Discord webhook URL.")
+        return
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "content": message
+    }
+
+    try:
+        response = requests.post(DISCORD_WEBHOOK_URL, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Could not send message to Discord: {e}")
 
 # Setup Chrome driver
 service = Service(ChromeDriverManager().install())
@@ -20,8 +45,12 @@ try:
     # Wait for the page to load
     wait = WebDriverWait(driver, 20) # Increased wait time
 
+    # --- Retail Price ---
+    retail_price_element = wait.until(EC.presence_of_element_located((By.XPATH, '//span[contains(text(), "$")]')))
+    retail_price = retail_price_element.text
+    
     # --- TradeUp Information ---
-    print("\n--- TradeUp Information ---")
+    tradeup_info = ""
     try:
         # Find the container for the TradeUp information using a CSS selector
         tradeup_container = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-testid='tradeupAccordion']")))
@@ -32,44 +61,47 @@ try:
 
         # Retail Price
         retail_price_element = soup.find('span', attrs={'data-testid': 'msrp-value-trade-up'})
-        retail_price = retail_price_element.text.strip() if retail_price_element else "Not found"
-        print(f"Retail Price: {retail_price}")
+        tradeup_retail_price = retail_price_element.text.strip() if retail_price_element else "Not found"
 
         # Upfront Cost
         upfront_cost_element = soup.find('span', attrs={'data-testid': 'upfront-value-trade-up'})
-        upfront_cost = upfront_cost_element.text.strip() if upfront_cost_element else "Not found"
-        print(f"Upfront Cost: {upfront_cost}")
+        tradeup_upfront_cost = upfront_cost_element.text.strip() if upfront_cost_element else "Not found"
 
         # Savings
         savings_element = soup.find('span', attrs={'data-testid': 'phone-savings-value-trade-up'})
-        savings = savings_element.text.strip() if savings_element else "Not found"
-        print(f"Savings: {savings}")
+        tradeup_savings = savings_element.text.strip() if savings_element else "Not found"
 
         # TradeUp Amount
         tradeup_amount_element = soup.find('span', attrs={'data-testid': 'remaining-value-trade-up'})
         tradeup_amount = tradeup_amount_element.text.strip() if tradeup_amount_element else "Not found"
-        print(f"TradeUp Amount: {tradeup_amount}")
 
         # MyTab Savings
         mytab_savings_element = soup.find('span', attrs={'data-testid': 'mytab-savings-value'})
-        mytab_savings = mytab_savings_element.text.strip() if mytab_savings_element else "Not found"
-        print(f"MyTab Savings: {mytab_savings}")
+        tradeup_mytab_savings = mytab_savings_element.text.strip() if mytab_savings_element else "Not found"
 
         # Total MyTab Charge
         total_mytab_charge_element = soup.find('span', attrs={'data-testid': 'mytab-total-value'})
-        total_mytab_charge = total_mytab_charge_element.text.strip() if total_mytab_charge_element else "Not found"
-        print(f"Total MyTab Charge: {total_mytab_charge}")
+        tradeup_total_mytab_charge = total_mytab_charge_element.text.strip() if total_mytab_charge_element else "Not found"
 
         # Required Plan
         required_plan_element = soup.find('div', attrs={'data-testid': 'return-policy-trade-up'})
-        required_plan = required_plan_element.text.strip() if required_plan_element else "Not found"
-        print(f"Required Plan: {required_plan}")
+        tradeup_required_plan = required_plan_element.text.strip() if required_plan_element else "Not found"
+
+        tradeup_info = f"""**TradeUp Information:**
+Retail Price: {tradeup_retail_price}
+Upfront Cost: {tradeup_upfront_cost}
+Savings: {tradeup_savings}
+TradeUp Amount: {tradeup_amount}
+MyTab Savings: {tradeup_mytab_savings}
+Total MyTab Charge: {tradeup_total_mytab_charge}
+Required Plan: {tradeup_required_plan}
+"""
 
     except Exception as e:
-        print(f"Could not retrieve TradeUp information: {e}")
+        tradeup_info = f"Could not retrieve TradeUp information: {e}"
 
     # --- MyTab Information ---
-    print("\n--- MyTab Information ---")
+    mytab_info = ""
     try:
         # Find and click the MyTab tab
         mytab_tab = driver.find_element(By.XPATH, '//div[contains(text(), "MyTab")]')
@@ -86,34 +118,48 @@ try:
 
         # Retail Price
         retail_price_element = soup.find('span', attrs={'data-testid': 'msrp-value-mytab'})
-        retail_price = retail_price_element.text.strip() if retail_price_element else "Not found"
-        print(f"Retail Price: {retail_price}")
+        mytab_retail_price = retail_price_element.text.strip() if retail_price_element else "Not found"
 
         # Upfront Cost
         upfront_cost_element = soup.find('span', attrs={'data-testid': 'upfront-value-mytab'})
-        upfront_cost = upfront_cost_element.text.strip() if upfront_cost_element else "Not found"
-        print(f"Upfront Cost: {upfront_cost}")
+        mytab_upfront_cost = upfront_cost_element.text.strip() if upfront_cost_element else "Not found"
 
         # MyTab Savings
         mytab_savings_element = soup.find('span', attrs={'data-testid': 'phone-savings-value-mytab'})
         mytab_savings = mytab_savings_element.text.strip() if mytab_savings_element else "Not found"
-        print(f"MyTab Savings: {mytab_savings}")
 
         # Total MyTab Charge
         total_mytab_charge_element = soup.find('span', attrs={'data-testid': 'mytab-total-value'})
-        total_mytab_charge = total_mytab_charge_element.text.strip() if total_mytab_charge_element else "Not found"
-        print(f"Total MyTab Charge: {total_mytab_charge}")
+        mytab_total_mytab_charge = total_mytab_charge_element.text.strip() if total_mytab_charge_element else "Not found"
 
         # Required Plan
         required_plan_element = soup.find('div', attrs={'data-testid': 'return-policy-mytab'})
-        required_plan = required_plan_element.text.strip() if required_plan_element else "Not found"
-        print(f"Required Plan: {required_plan}")
+        mytab_required_plan = required_plan_element.text.strip() if required_plan_element else "Not found"
+
+        mytab_info = f"""**MyTab Information:**
+Retail Price: {mytab_retail_price}
+Upfront Cost: {mytab_upfront_cost}
+MyTab Savings: {mytab_savings}
+Total MyTab Charge: {mytab_total_mytab_charge}
+Required Plan: {mytab_required_plan}
+"""
 
     except Exception as e:
-        print(f"Could not retrieve MyTab information: {e}")
+        mytab_info = f"Could not retrieve MyTab information: {e}"
+
+    # --- Send to Discord ---
+    message = f"""**Freedom Mobile Pixel 10 Pro XL Pricing:**
+
+{tradeup_info}
+{mytab_info}
+"""
+    send_to_discord(message)
+    print(message)
 
 except Exception as e:
-    print(f"An error occurred: {e}")
+    error_message = f"An error occurred: {e}"
+    send_to_discord(error_message)
+    print(error_message)
 
 finally:
     # Close the browser
