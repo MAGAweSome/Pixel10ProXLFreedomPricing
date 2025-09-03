@@ -7,14 +7,18 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import requests
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # --- Discord Webhook Configuration ---
-DISCORD_WEBHOOK_URL = "YOUR_WEBHOOK_URL_HERE" # <--- REPLACE WITH YOUR WEBHOOK URL
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 def send_to_discord(message):
     """Sends a message to a Discord channel using a webhook."""
-    if DISCORD_WEBHOOK_URL == "YOUR_WEBHOOK_URL_HERE":
-        print("Please replace 'YOUR_WEBHOOK_URL_HERE' with your actual Discord webhook URL.")
+    if not DISCORD_WEBHOOK_URL:
+        print("DISCORD_WEBHOOK_URL not found in .env file.")
         return
 
     headers = {
