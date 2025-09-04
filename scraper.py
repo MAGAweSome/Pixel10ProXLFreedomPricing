@@ -16,7 +16,7 @@ load_dotenv()
 # --- Discord Configuration ---
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-DISCORD_CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL_ID"))
+DISCORD_CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID")
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -24,8 +24,11 @@ client = discord.Client(intents=intents)
 
 async def get_last_message():
     """Fetches the last message from the specified Discord channel."""
+    if not DISCORD_CHANNEL_ID:
+        print("DISCORD_CHANNEL_ID not found in .env file.")
+        return None
     try:
-        channel = await client.fetch_channel(DISCORD_CHANNEL_ID)
+        channel = await client.fetch_channel(int(DISCORD_CHANNEL_ID))
         async for message in channel.history(limit=1):
             return message.content
     except Exception as e:
@@ -213,7 +216,10 @@ Required Plan: {mytab_required_plan}
         await client.close()
 
 if __name__ == "__main__":
-    if not DISCORD_BOT_TOKEN:
-        print("DISCORD_BOT_TOKEN not found in .env file.")
+    if not DISCORD_BOT_TOKEN or not DISCORD_CHANNEL_ID:
+        print("DISCORD_BOT_TOKEN or DISCORD_CHANNEL_ID not found in .env file.")
     else:
-        client.run(DISCORD_BOT_TOKEN)
+        try:
+            client.run(DISCORD_BOT_TOKEN)
+        except discord.errors.LoginFailure:
+            print("Improper token has been passed. Please make sure you have the correct bot token in your .env file.")
