@@ -11,6 +11,7 @@ This script scrapes the Freedom Mobile website to retrieve pricing information f
     - `beautifulsoup4`
     - `requests`
     - `python-dotenv`
+    - `discord.py`
 
 ## Installation
 
@@ -21,7 +22,7 @@ This script scrapes the Freedom Mobile website to retrieve pricing information f
 cp example.env .env
 ```
 
-3. Open the `.env` file and replace `YOUR_DISCORD_WEBHOOK_URL_HERE` with your actual Discord webhook URL.
+3. Open the `.env` file and replace the placeholder values with your actual Discord webhook URL, bot token, and channel ID.
 4. Install the required packages:
 
 ```bash
@@ -36,4 +37,4 @@ To run the script, execute the following command:
 python scraper.py
 ```
 
-The script will then print the pricing information to the console and send it to your Discord channel.
+The script will then print the pricing information to the console and send it to your Discord channel if the information has changed since the last message.
