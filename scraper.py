@@ -191,7 +191,11 @@ Required Plan: {mytab_required_plan}
 {mytab_info}
 """
         
-        if message != last_message:
+        # Normalize the messages for comparison
+        normalized_message = ' '.join(message.split())
+        normalized_last_message = ' '.join(last_message.split()) if last_message else ""
+
+        if normalized_message != normalized_last_message:
             await send_to_discord(message)
             print(message)
         else:
