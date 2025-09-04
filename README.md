@@ -22,7 +22,7 @@ This script scrapes the Freedom Mobile website to retrieve pricing information f
 cp example.env .env
 ```
 
-3. Open the `.env` file and replace the placeholder values with your actual Discord webhook URL, bot token, and channel ID.
+3. Open the `.env` file and replace the placeholder values with your actual Discord bot token and channel ID.
 4. Install the required packages:
 
 ```bash

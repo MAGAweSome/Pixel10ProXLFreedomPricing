@@ -5,7 +5,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import requests
 import json
 import os
 from dotenv import load_dotenv
@@ -14,7 +13,6 @@ import discord
 load_dotenv()
 
 # --- Discord Configuration ---
-DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 DISCORD_CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID")
 
@@ -38,24 +36,15 @@ async def get_last_message():
         print(f"Could not fetch last message from Discord: {e}")
         return None
 
-def send_to_discord(message):
-    """Sends a message to a Discord channel using a webhook."""
-    if not DISCORD_WEBHOOK_URL:
-        print("DISCORD_WEBHOOK_URL not found in .env file.")
+async def send_to_discord(message):
+    """Sends a message to a Discord channel using the bot."""
+    if not DISCORD_CHANNEL_ID:
+        print("DISCORD_CHANNEL_ID not found in .env file.")
         return
-
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "content": message
-    }
-
     try:
-        response = requests.post(DISCORD_WEBHOOK_URL, headers=headers, data=json.dumps(data))
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
+        channel = await client.fetch_channel(int(DISCORD_CHANNEL_ID))
+        await channel.send(message)
+    except Exception as e:
         print(f"Could not send message to Discord: {e}")
 
 @client.event
@@ -203,14 +192,14 @@ Required Plan: {mytab_required_plan}
 """
         
         if message != last_message:
-            send_to_discord(message)
+            await send_to_discord(message)
             print(message)
         else:
             print("Pricing has not changed. No message sent to Discord.")
 
     except Exception as e:
         error_message = f"An error occurred: {e}"
-        send_to_discord(error_message)
+        await send_to_discord(error_message)
         print(error_message)
 
     finally:
