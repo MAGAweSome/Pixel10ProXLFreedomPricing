@@ -31,6 +31,9 @@ async def get_last_message():
         channel = await client.fetch_channel(int(DISCORD_CHANNEL_ID))
         async for message in channel.history(limit=1):
             return message.content
+    except discord.errors.Forbidden:
+        print("The bot does not have the necessary permissions to read the message history of the channel. Please make sure the bot has the 'Read Message History' permission.")
+        return None
     except Exception as e:
         print(f"Could not fetch last message from Discord: {e}")
         return None
